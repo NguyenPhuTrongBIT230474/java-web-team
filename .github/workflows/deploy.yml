@@ -1,32 +1,32 @@
-name: Deploy to Tomcat
+name: Deploy Java App to Tomcat
 
 on:
   push:
     branches:
-      - main
+      - main   # chạy khi bạn đẩy code lên nhánh main (sau khi merge)
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  deploy-to-tomcat:
+    runs-on: ubuntu-latest   # máy ảo GitHub để chạy CI/CD
 
     steps:
-    - name: Checkout code
+    - name: Bước 1: Lấy mã nguồn từ repo
       uses: actions/checkout@v3
 
-    - name: Set up JDK
+    - name: Bước 2: Cài Java
       uses: actions/setup-java@v3
       with:
-        java-version: '17'
-        distribution: 'temurin'
+        java-version: '17'       # Sử dụng Java 17
+        distribution: 'temurin'  # Phân phối Java miễn phí, ổn định
 
-    - name: Build WAR
-      run: mvn package
+    - name: Bước 3: Build WAR bằng Maven
+      run: mvn clean package    # Lệnh Maven để tạo file .war
 
-    - name: Deploy to Tomcat (via SCP)
+    - name: Bước 4: Copy WAR lên Tomcat Server
       uses: appleboy/scp-action@master
       with:
-        host: ${{ secrets.TOMCAT_HOST }}
-        username: ${{ secrets.TOMCAT_USER }}
-        password: ${{ secrets.TOMCAT_PASS }}
-        source: "target/*.war"
-        target: "/opt/tomcat/webapps/"
+        host: ${{ secrets.TOMCAT_HOST }}        # Địa chỉ server
+        username: ${{ secrets.TOMCAT_USER }}    # Tài khoản SSH
+        password: ${{ secrets.TOMCAT_PASS }}    # Mật khẩu SSH
+        source: "target/*.war"                  # File cần copy
+        target: "/opt/tomcat/webapps/"          # Nơi Tomcat chạy
